@@ -1,4 +1,4 @@
-package com.duyhung.Springboot;
+package com.duyhung.jobhunter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
