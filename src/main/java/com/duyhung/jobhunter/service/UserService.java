@@ -33,6 +33,7 @@ public class UserService {
 
     public List<User> findAll() {
         return this.userRepository.findAll();
+
     }
 
     public User update(User reqUser) {
