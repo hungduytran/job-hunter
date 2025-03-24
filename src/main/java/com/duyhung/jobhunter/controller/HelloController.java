@@ -1,6 +1,8 @@
 package com.duyhung.jobhunter.controller;
 
 import com.duyhung.jobhunter.service.error.IdInvalidException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -8,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloController {
 
     @GetMapping("/")
-    public String home() throws IdInvalidException {
+    public ResponseEntity<String> home() throws IdInvalidException {
         //throw new IdInvalidException("check");
-        return "Hello World️";
+        return ResponseEntity.status(HttpStatus.OK).body("Hello World");
     }
 }

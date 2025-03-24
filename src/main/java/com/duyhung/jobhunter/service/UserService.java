@@ -36,6 +36,10 @@ public class UserService {
 
     }
 
+    public User findByUsername(String username) {
+        return this.userRepository.findByEmail(username);
+    }
+
     public User update(User reqUser) {
         User currentUser = this.findById(reqUser.getId());
         if (currentUser != null) {
