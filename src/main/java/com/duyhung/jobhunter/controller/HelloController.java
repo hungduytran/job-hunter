@@ -1,6 +1,6 @@
 package com.duyhung.jobhunter.controller;
 
-import com.duyhung.jobhunter.service.error.IdInvalidException;
+import com.duyhung.jobhunter.util.error.IdInvalidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

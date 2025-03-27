@@ -1,0 +1,69 @@
+package com.duyhung.jobhunter.service;
+
+import com.duyhung.jobhunter.domain.Company;
+import com.duyhung.jobhunter.domain.User;
+import com.duyhung.jobhunter.domain.dto.Meta;
+import com.duyhung.jobhunter.domain.dto.ResultPaginationDTO;
+import com.duyhung.jobhunter.repository.CompanyRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class CompanyService {
+
+    private final CompanyRepository companyRepository;
+
+    public CompanyService(CompanyRepository companyRepository) {
+        this.companyRepository = companyRepository;
+    }
+
+    public Company createCompany(Company company){
+        return companyRepository.save(company);
+    }
+
+    public ResultPaginationDTO getAllCompanies(Pageable pageable){
+        Page<Company> pageCompany =this.companyRepository.findAll(pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        Meta mt = new Meta();
+
+        mt.setPage(pageCompany.getNumber());
+        mt.setPageSize(pageCompany.getSize());
+
+        mt.setPages(pageCompany.getTotalPages());
+        mt.setTotal(pageCompany.getTotalElements());
+
+        rs.setMeta(mt);
+        rs.setResult(pageCompany.getContent());
+
+        return rs;
+    }
+
+    public Company updateCompany(Company company){
+        Optional<Company> companyToUpdate = companyRepository.findById(company.getId());
+        if(companyToUpdate.isPresent()){
+            Company currentCompany = companyToUpdate.get();
+            currentCompany.setName(company.getName());
+            currentCompany.setAddress(company.getAddress());
+            currentCompany.setDescription(company.getDescription());
+            currentCompany.setLogo(company.getLogo());
+            return this.companyRepository.save(currentCompany);
+        }
+        return null;
+    }
+
+    public Company findCompanyById(Long id){
+        Optional<Company> company = this.companyRepository.findById(id);
+        if (company.isPresent()) {
+            return company.get();
+        }
+        return null;
+    }
+
+    public void deleteCompany(Long id){
+        companyRepository.deleteById(id);
+    }
+}

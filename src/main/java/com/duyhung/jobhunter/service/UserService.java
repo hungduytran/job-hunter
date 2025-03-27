@@ -1,7 +1,11 @@
 package com.duyhung.jobhunter.service;
 
 import com.duyhung.jobhunter.domain.User;
+import com.duyhung.jobhunter.domain.dto.Meta;
+import com.duyhung.jobhunter.domain.dto.ResultPaginationDTO;
 import com.duyhung.jobhunter.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,9 +35,21 @@ public class UserService {
         return null;
     }
 
-    public List<User> findAll() {
-        return this.userRepository.findAll();
+    public ResultPaginationDTO findAll(Pageable pageable) {
+        Page<User> pageUsers =this.userRepository.findAll(pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        Meta mt = new Meta();
 
+        mt.setPage(pageUsers.getNumber());
+        mt.setPageSize(pageUsers.getSize());
+
+        mt.setPages(pageUsers.getTotalPages());
+        mt.setTotal(pageUsers.getTotalElements());
+
+        rs.setMeta(mt);
+        rs.setResult(pageUsers.getContent());
+
+        return rs;
     }
 
     public User findByUsername(String username) {
