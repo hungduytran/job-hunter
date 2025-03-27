@@ -4,8 +4,10 @@ import com.duyhung.jobhunter.domain.User;
 import com.duyhung.jobhunter.domain.dto.ResultPaginationDTO;
 import com.duyhung.jobhunter.service.UserService;
 import com.duyhung.jobhunter.util.error.IdInvalidException;
+import com.turkraft.springfilter.boot.Filter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,18 +57,19 @@ public class UserController {
 
     @GetMapping("/users")
     public ResponseEntity<ResultPaginationDTO> getAllUser(
+            @Filter Specification<User> spec,
             @RequestParam("current") Optional<String> currentOptional,
             @RequestParam("pageSize") Optional<String> pageSizeOptional
     ) {
-        String sCurrentPage = currentOptional.isPresent() ? currentOptional.get() : "";
-        String sPageSize = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
+//        String sCurrentPage = currentOptional.isPresent() ? currentOptional.get() : "";
+//        String sPageSize = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
+//
+//        int currentPage = Integer.parseInt(sCurrentPage);
+//        int pageSize = Integer.parseInt(sPageSize);
+//
+//        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
 
-        int currentPage = Integer.parseInt(sCurrentPage) - 1;
-        int pageSize = Integer.parseInt(sPageSize);
-
-        Pageable pageable = PageRequest.of(currentPage, pageSize);
-
-        return ResponseEntity.ok(this.userService.findAll(pageable));
+        return ResponseEntity.ok(this.userService.findAll(spec));
 //      return ResponseEntity.status(HttpStatus.OK).body(this.userService.findAll());
     }
 
