@@ -3,6 +3,7 @@ package com.duyhung.jobhunter.controller;
 import com.duyhung.jobhunter.domain.User;
 import com.duyhung.jobhunter.domain.dto.ResultPaginationDTO;
 import com.duyhung.jobhunter.service.UserService;
+import com.duyhung.jobhunter.util.annotation.ApiMessage;
 import com.duyhung.jobhunter.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import org.springframework.data.domain.PageRequest;
@@ -56,6 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
+    @ApiMessage("fetch all user")
     public ResponseEntity<ResultPaginationDTO> getAllUser(
             @Filter Specification<User> spec,
             Pageable pageable
