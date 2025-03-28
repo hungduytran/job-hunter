@@ -58,8 +58,9 @@ public class UserController {
     @GetMapping("/users")
     public ResponseEntity<ResultPaginationDTO> getAllUser(
             @Filter Specification<User> spec,
-            @RequestParam("current") Optional<String> currentOptional,
-            @RequestParam("pageSize") Optional<String> pageSizeOptional
+            Pageable pageable
+//            @RequestParam("current") Optional<String> currentOptional,
+//            @RequestParam("pageSize") Optional<String> pageSizeOptional
     ) {
 //        String sCurrentPage = currentOptional.isPresent() ? currentOptional.get() : "";
 //        String sPageSize = pageSizeOptional.isPresent() ? pageSizeOptional.get() : "";
@@ -69,7 +70,7 @@ public class UserController {
 //
 //        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
 
-        return ResponseEntity.ok(this.userService.findAll(spec));
+        return ResponseEntity.ok(this.userService.findAll(spec, pageable));
 //      return ResponseEntity.status(HttpStatus.OK).body(this.userService.findAll());
     }
 
