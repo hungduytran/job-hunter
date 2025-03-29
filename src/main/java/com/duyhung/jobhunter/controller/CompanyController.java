@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/v1")
+
 public class CompanyController {
 
     private final CompanyService companyService;
