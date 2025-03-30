@@ -4,6 +4,7 @@ package com.duyhung.jobhunter.controller;
 import com.duyhung.jobhunter.domain.Company;
 import com.duyhung.jobhunter.domain.dto.ResultPaginationDTO;
 import com.duyhung.jobhunter.service.CompanyService;
+import com.duyhung.jobhunter.util.annotation.ApiMessage;
 import com.duyhung.jobhunter.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
@@ -37,6 +38,7 @@ public class CompanyController {
     }
 
     @GetMapping("/companies")
+    @ApiMessage("Fecth companies")
     public ResponseEntity<ResultPaginationDTO> getAllCompanies(
             @Filter Specification<Company> spec, Pageable pageable
 //            @RequestParam("current") Optional<String> currentOptional,

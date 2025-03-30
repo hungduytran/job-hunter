@@ -1,8 +1,7 @@
 package com.duyhung.jobhunter.service;
 
 import com.duyhung.jobhunter.domain.User;
-import com.duyhung.jobhunter.domain.dto.Meta;
-import com.duyhung.jobhunter.domain.dto.ResultPaginationDTO;
+import com.duyhung.jobhunter.domain.dto.*;
 import com.duyhung.jobhunter.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -36,6 +36,10 @@ public class UserService {
         return null;
     }
 
+    public  boolean isEmailExist(String email) {
+        return this.userRepository.existsByEmail(email);
+    }
+
     public ResultPaginationDTO findAll(Specification<User> spec, Pageable pageable) {
         Page<User> pageUsers =this.userRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
@@ -48,7 +52,21 @@ public class UserService {
         mt.setTotal(pageUsers.getTotalElements());
 
         rs.setMeta(mt);
-        rs.setResult(pageUsers.getContent());
+
+        //remove sensitive data
+        List<ResUserDTO> listUser = pageUsers.getContent()
+                .stream().map(item -> new ResUserDTO(
+                        item.getId(),
+                        item.getName(),
+                        item.getEmail(),
+                        item.getGender(),
+                        item.getAddress(),
+                        item.getAge(),
+                        item.getUpdatedAt(),
+                        item.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        rs.setResult(listUser);
 
         return rs;
     }
@@ -61,10 +79,48 @@ public class UserService {
         User currentUser = this.findById(reqUser.getId());
         if (currentUser != null) {
             currentUser.setName(reqUser.getName());
-            currentUser.setEmail(reqUser.getEmail());
-            currentUser.setPassword(reqUser.getPassword());
+            currentUser.setAge(reqUser.getAge());
+            currentUser.setGender(reqUser.getGender());
+            currentUser.setAddress(reqUser.getAddress());
+
             currentUser = this.userRepository.save(currentUser);
         }
         return currentUser;
+    }
+
+    public ResUpdateUserDTO convertToResUpdateUserDTO(User user) {
+        ResUpdateUserDTO res = new ResUpdateUserDTO();
+        res.setId(user.getId());
+        res.setName(user.getName());
+        res.setAge(user.getAge());
+        res.setGender(user.getGender());
+        res.setAddress(user.getAddress());
+        res.setUpdateAt(user.getUpdatedAt());
+        return res;
+    }
+
+    public ResCreateUserDTO convertToResCreateDTO(User user) {
+        ResCreateUserDTO res = new ResCreateUserDTO();
+        res.setId(user.getId());
+        res.setName(user.getName());
+        res.setEmail(user.getEmail());
+        res.setAddress(user.getAddress());
+        res.setAge(user.getAge());
+        res.setGender(user.getGender());
+        res.setCreatedAt(user.getCreatedAt());
+        return res;
+    }
+
+    public ResUserDTO convertToResUserDTO(User user) {
+        ResUserDTO res = new ResUserDTO();
+        res.setId(user.getId());
+        res.setName(user.getName());
+        res.setEmail(user.getEmail());
+        res.setAddress(user.getAddress());
+        res.setAge(user.getAge());
+        res.setGender(user.getGender());
+        res.setCreatedAt(user.getCreatedAt());
+        res.setUpdatedAt(user.getUpdatedAt());
+        return res;
     }
 }

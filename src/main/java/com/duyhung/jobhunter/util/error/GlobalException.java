@@ -2,6 +2,7 @@ package com.duyhung.jobhunter.util.error;
 
 
 import com.duyhung.jobhunter.domain.RestResponse;
+import jakarta.persistence.NoResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -50,6 +51,7 @@ public class GlobalException {
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
             BadCredentialsException.class,
+            IdInvalidException.class,
     })
     public ResponseEntity<RestResponse<Object>> handleIdException(Exception ex) {
         RestResponse<Object> res = new RestResponse<>();
@@ -60,7 +62,18 @@ public class GlobalException {
     }
 
     // Xử lý lỗi validation
+    @ExceptionHandler(value = {
+            NoResultException.class,
+    })
+    public ResponseEntity<RestResponse<Object>> handleNoResultException(Exception ex) {
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(HttpStatus.NOT_FOUND.value());
+        res.setError(ex.getMessage());
+        res.setMessage("404 Not Found, URL may not exist");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
+
     public ResponseEntity<RestResponse<Object>> validException(MethodArgumentNotValidException ex) {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
