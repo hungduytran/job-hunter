@@ -1,7 +1,9 @@
 package com.duyhung.jobhunter.controller;
 
+import com.duyhung.jobhunter.domain.User;
 import com.duyhung.jobhunter.domain.dto.LoginDTO;
 import com.duyhung.jobhunter.domain.dto.ResLoginDTO;
+import com.duyhung.jobhunter.service.UserService;
 import com.duyhung.jobhunter.util.SecurityUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,10 +21,12 @@ public class AuthController {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
+    private final UserService userService;
 
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -39,6 +43,14 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         ResLoginDTO resLoginDTO = new ResLoginDTO();
+        User currentUserDB = this.userService.findByUsername(loginDTO.getUsername());
+
+        if (currentUserDB != null) {
+            ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
+                    currentUserDB.getId(),currentUserDB.getName(), currentUserDB.getEmail());
+            resLoginDTO.setUser(userLogin);
+        }
+
         resLoginDTO.setAccesstoken(access_token);
         return ResponseEntity.ok().body(resLoginDTO);
     }
