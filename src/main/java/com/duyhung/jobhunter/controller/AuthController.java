@@ -95,7 +95,6 @@ public class AuthController {
         }
         return ResponseEntity.ok().body(userLogin);
     }
-
     @GetMapping("/auth/refresh")
     @ApiMessage("Get user by refresh token")
     public ResponseEntity<ResLoginDTO> getRefreshToken(
@@ -103,7 +102,7 @@ public class AuthController {
         if (refresh_Token.equals("abc")) {
             throw new IdInvalidException("Ban khong co refresh token o cookie");
         }
-        // check valid
+        // check valida
         Jwt decodedToken = this.securityUtil.checkValidRefreshToken(refresh_Token);
         String email = decodedToken.getSubject();
 
@@ -145,4 +144,28 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, resCookie.toString())
                 .body(resLoginDTO);
         }
+
+
+    @PostMapping("/auth/logout")
+    @ApiMessage("Logout User")
+    public ResponseEntity<ResLoginDTO> logout() throws IdInvalidException {
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        if (email.equals("")) {
+            throw new IdInvalidException("Access Token khong hop le");
+        }
+
+        //update refresh token = null
+        this.userService.updateUserToken(null, email);
+
+        ResponseCookie deleteSpringCookie = ResponseCookie
+                .from("refresh_token", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
+                .body(null);
+    }
 }
