@@ -6,6 +6,7 @@ import com.duyhung.jobhunter.domain.dto.ResLoginDTO;
 import com.duyhung.jobhunter.service.UserService;
 import com.duyhung.jobhunter.util.SecurityUtil;
 import com.duyhung.jobhunter.util.annotation.ApiMessage;
+import com.duyhung.jobhunter.util.error.IdInvalidException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -55,7 +56,7 @@ public class AuthController {
             resLoginDTO.setUser(userLogin);
         }
 
-        String access_token = this.securityUtil.createAccessToken(authentication, resLoginDTO.getUser());
+        String access_token = this.securityUtil.createAccessToken(authentication.getName(), resLoginDTO.getUser());
 
 
         resLoginDTO.setAccesstoken(access_token);
@@ -97,11 +98,51 @@ public class AuthController {
 
     @GetMapping("/auth/refresh")
     @ApiMessage("Get user by refresh token")
-    public ResponseEntity<String> getRefreshToken(
-            @CookieValue(name = "refresh_token") String refresh_Token) {
+    public ResponseEntity<ResLoginDTO> getRefreshToken(
+            @CookieValue(name = "refresh_token", defaultValue = "abc") String refresh_Token) throws IdInvalidException {
+        if (refresh_Token.equals("abc")) {
+            throw new IdInvalidException("Ban khong co refresh token o cookie");
+        }
         // check valid
         Jwt decodedToken = this.securityUtil.checkValidRefreshToken(refresh_Token);
         String email = decodedToken.getSubject();
-        return ResponseEntity.ok().body(email);
-    }
+
+        // check user by token + email
+        User currentUser = this.userService.getuserByRefreshTokenAndEmail(refresh_Token, email);
+        if (currentUser == null) {
+            throw new IdInvalidException("Refresh token khong hop le");
+        }
+        //issue new token/set refresh token as cookies
+
+        ResLoginDTO resLoginDTO = new ResLoginDTO();
+        User currentUserDB = this.userService.findByUsername(email);
+
+        if (currentUserDB != null) {
+            ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
+                    currentUserDB.getId(),currentUserDB.getName(), currentUserDB.getEmail());
+            resLoginDTO.setUser(userLogin);
+        }
+
+        String access_token = this.securityUtil.createAccessToken(email, resLoginDTO.getUser());
+
+        resLoginDTO.setAccesstoken(access_token);
+
+        //create refresh token
+        String new_refresh_token = this.securityUtil.createRefreshToken(email, resLoginDTO);
+
+        //update user
+        this.userService.updateUserToken(new_refresh_token, email);
+
+        //set cookies
+        ResponseCookie resCookie = ResponseCookie
+                .from("refresh_token", new_refresh_token)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshTokenExpiration)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, resCookie.toString())
+                .body(resLoginDTO);
+        }
 }
