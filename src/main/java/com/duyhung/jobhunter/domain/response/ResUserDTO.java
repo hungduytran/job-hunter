@@ -1,4 +1,4 @@
-package com.duyhung.jobhunter.domain.dto;
+package com.duyhung.jobhunter.domain.response;
 
 import com.duyhung.jobhunter.util.constant.GenderEnum;
 

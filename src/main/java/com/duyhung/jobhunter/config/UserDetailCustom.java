@@ -1,5 +1,6 @@
-package com.duyhung.jobhunter.service;
+package com.duyhung.jobhunter.config;
 
+import com.duyhung.jobhunter.service.UserService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

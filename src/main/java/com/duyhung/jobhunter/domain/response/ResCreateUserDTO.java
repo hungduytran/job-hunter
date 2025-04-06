@@ -1,16 +1,17 @@
-package com.duyhung.jobhunter.domain.dto;
+package com.duyhung.jobhunter.domain.response;
 
 import com.duyhung.jobhunter.util.constant.GenderEnum;
 
 import java.time.Instant;
 
-public class ResUpdateUserDTO {
+public class ResCreateUserDTO {
     private long id;
     private String name;
+    private String email;
     private GenderEnum gender;
     private String address;
     private int age;
-    private Instant updateAt;
+    private Instant createdAt;
 
     public long getId() {
         return id;
@@ -26,6 +27,14 @@ public class ResUpdateUserDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public GenderEnum getGender() {
@@ -52,11 +61,11 @@ public class ResUpdateUserDTO {
         this.age = age;
     }
 
-    public Instant getUpdateAt() {
-        return updateAt;
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public void setUpdateAt(Instant updateAt) {
-        this.updateAt = updateAt;
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

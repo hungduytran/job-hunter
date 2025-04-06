@@ -1,7 +1,10 @@
 package com.duyhung.jobhunter.service;
 
 import com.duyhung.jobhunter.domain.User;
-import com.duyhung.jobhunter.domain.dto.*;
+import com.duyhung.jobhunter.domain.response.ResCreateUserDTO;
+import com.duyhung.jobhunter.domain.response.ResUpdateUserDTO;
+import com.duyhung.jobhunter.domain.response.ResUserDTO;
+import com.duyhung.jobhunter.domain.response.ResultPaginationDTO;
 import com.duyhung.jobhunter.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +46,7 @@ public class UserService {
     public ResultPaginationDTO findAll(Specification<User> spec, Pageable pageable) {
         Page<User> pageUsers =this.userRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
-        Meta mt = new Meta();
+        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
 
         mt.setPage(pageable.getPageNumber() + 1);
         mt.setPageSize(pageable.getPageSize());

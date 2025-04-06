@@ -1,16 +1,13 @@
 package com.duyhung.jobhunter.service;
 
 import com.duyhung.jobhunter.domain.Company;
-import com.duyhung.jobhunter.domain.User;
-import com.duyhung.jobhunter.domain.dto.Meta;
-import com.duyhung.jobhunter.domain.dto.ResultPaginationDTO;
+import com.duyhung.jobhunter.domain.response.ResultPaginationDTO;
 import com.duyhung.jobhunter.repository.CompanyRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,7 +26,7 @@ public class CompanyService {
     public ResultPaginationDTO getAllCompanies(Specification<Company> spec, Pageable pageable){
         Page<Company> pageCompany =this.companyRepository.findAll(spec,pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
-        Meta mt = new Meta();
+        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
 
         mt.setPage(pageCompany.getNumber() + 1);
         mt.setPageSize(pageCompany.getSize());

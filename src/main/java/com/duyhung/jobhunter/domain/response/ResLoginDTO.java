@@ -1,6 +1,10 @@
-package com.duyhung.jobhunter.domain.dto;
+package com.duyhung.jobhunter.domain.response;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ResLoginDTO {
+
+    @JsonProperty("access_token")
     private String accesstoken;
     private UserLogin user;
 
@@ -40,6 +44,25 @@ public class ResLoginDTO {
 
         public void setEmail(String email) {
             this.email = email;
+        }
+    }
+
+    public static class UserGetAccount {
+        private UserLogin user;
+
+        public UserGetAccount() {
+        }
+
+        public UserGetAccount(UserLogin user) {
+            this.user = user;
+        }
+
+        public UserLogin getUser() {
+            return user;
+        }
+
+        public void setUser(UserLogin user) {
+            this.user = user;
         }
     }
 

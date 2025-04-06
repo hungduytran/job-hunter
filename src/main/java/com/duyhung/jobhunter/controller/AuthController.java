@@ -1,8 +1,8 @@
 package com.duyhung.jobhunter.controller;
 
 import com.duyhung.jobhunter.domain.User;
-import com.duyhung.jobhunter.domain.dto.LoginDTO;
-import com.duyhung.jobhunter.domain.dto.ResLoginDTO;
+import com.duyhung.jobhunter.domain.request.ReqLoginDTO;
+import com.duyhung.jobhunter.domain.response.ResLoginDTO;
 import com.duyhung.jobhunter.service.UserService;
 import com.duyhung.jobhunter.util.SecurityUtil;
 import com.duyhung.jobhunter.util.annotation.ApiMessage;
@@ -36,10 +36,10 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<ResLoginDTO> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<ResLoginDTO> login(@RequestBody ReqLoginDTO reqLoginDTO) {
         //Nạp input gồm username/password vào Security
         UsernamePasswordAuthenticationToken authenticationToken
-                = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
+                = new UsernamePasswordAuthenticationToken(reqLoginDTO.getUsername(), reqLoginDTO.getPassword());
         //xác thực người dùng => cần viết hàm loadUserByUsername
         Authentication authentication =
                 authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -48,7 +48,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         ResLoginDTO resLoginDTO = new ResLoginDTO();
-        User currentUserDB = this.userService.findByUsername(loginDTO.getUsername());
+        User currentUserDB = this.userService.findByUsername(reqLoginDTO.getUsername());
 
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
@@ -62,10 +62,10 @@ public class AuthController {
         resLoginDTO.setAccesstoken(access_token);
 
         //create refresh token
-        String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), resLoginDTO);
+        String refresh_token = this.securityUtil.createRefreshToken(reqLoginDTO.getUsername(), resLoginDTO);
 
         //update user
-        this.userService.updateUserToken(refresh_token, loginDTO.getUsername());
+        this.userService.updateUserToken(refresh_token, reqLoginDTO.getUsername());
 
         //set cookies
         ResponseCookie resCookie = ResponseCookie
@@ -82,18 +82,20 @@ public class AuthController {
 
     @GetMapping("/auth/account")
     @ApiMessage("fetch account")
-    public ResponseEntity<ResLoginDTO.UserLogin> getAccount() {
+    public ResponseEntity<ResLoginDTO.UserGetAccount> getAccount() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ?
                 SecurityUtil.getCurrentUserLogin().get() : "";
         User currentUserDB = this.userService.findByUsername(email);
         ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
+        ResLoginDTO.UserGetAccount userGetAccount = new ResLoginDTO.UserGetAccount();
 
         if (currentUserDB != null) {
             userLogin.setId(currentUserDB.getId());
             userLogin.setEmail(currentUserDB.getEmail());
             userLogin.setName(currentUserDB.getName());
+            userGetAccount.setUser(userLogin);
         }
-        return ResponseEntity.ok().body(userLogin);
+        return ResponseEntity.ok().body(userGetAccount);
     }
     @GetMapping("/auth/refresh")
     @ApiMessage("Get user by refresh token")
