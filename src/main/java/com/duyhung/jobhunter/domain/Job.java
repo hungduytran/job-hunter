@@ -2,53 +2,51 @@ package com.duyhung.jobhunter.domain;
 
 
 import com.duyhung.jobhunter.util.SecurityUtil;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.duyhung.jobhunter.util.constant.LevelEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
 import java.util.List;
 
-@Setter
-@Getter
 @Entity
-@Table(name = "companies")
-
-public class Company {
+@Table(name = "jobs")
+@Getter
+@Setter
+public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @NotBlank(message = "name khong duoc de trong")
     private String name;
+    private String location;
+    private double salary;
+    private int quantity;
+    private LevelEnum level;
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
 
-    private String address;
-
-    private String logo;
-
-//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
+    private Instant startAt;
+    private Instant endDate;
+    private boolean active;
     private Instant createdAt;
-
-//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant updatedAt;
-
     private String createdBy;
-
     private String updatedBy;
 
-    @OneToMany( mappedBy = "company", fetch = FetchType.LAZY)
-    @JsonIgnore //lap vo han lay danh sach cty ko lay user
-    List<User> users;
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    @JsonIgnore
-    List<Job> jobs;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = {"jobs"})
+    @JoinTable(name = "job_skill", joinColumns = @JoinColumn(name = "job_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id"))
+    private List<Skill> skills;
 
     @PrePersist
     public void handleBeforeCreate() {
