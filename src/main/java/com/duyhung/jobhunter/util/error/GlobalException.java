@@ -1,7 +1,7 @@
 package com.duyhung.jobhunter.util.error;
 
 
-import com.duyhung.jobhunter.domain.RestResponse;
+import com.duyhung.jobhunter.domain.response.RestResponse;
 import jakarta.persistence.NoResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

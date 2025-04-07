@@ -3,12 +3,14 @@ package com.duyhung.jobhunter.domain;
 
 import com.duyhung.jobhunter.util.SecurityUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "companies")
@@ -38,6 +40,10 @@ public class Company {
 
     private String updatedBy;
 
+    @OneToMany( mappedBy = "company", fetch = FetchType.LAZY)
+    @JsonIgnore //lap vo han lay danh sach cty ko lay user
+    List<User> users;
+
     @PrePersist
     public void handleBeforeCreate() {
         this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true ?
@@ -49,6 +55,14 @@ public class Company {
         this.updatedAt = Instant.now();
         this.updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() == true ?
                 SecurityUtil.getCurrentUserLogin().get() : "";
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     public long getId() {

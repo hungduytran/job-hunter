@@ -12,6 +12,45 @@ public class ResUpdateUserDTO {
     private int age;
     private Instant updateAt;
 
+    private CompanyUser companyUser;
+
+    public static class CompanyUser {
+        private Long id;
+        private String name;
+
+        public CompanyUser() {
+        }
+
+        public CompanyUser(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    public CompanyUser getCompanyUser() {
+        return companyUser;
+    }
+
+    public void setCompanyUser(CompanyUser companyUser) {
+        this.companyUser = companyUser;
+    }
+
     public long getId() {
         return id;
     }

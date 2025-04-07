@@ -1,6 +1,6 @@
 package com.duyhung.jobhunter.config;
 
-import com.duyhung.jobhunter.domain.RestResponse;
+import com.duyhung.jobhunter.domain.response.RestResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

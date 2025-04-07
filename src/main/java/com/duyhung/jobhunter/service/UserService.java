@@ -1,6 +1,9 @@
 package com.duyhung.jobhunter.service;
 
+import com.duyhung.jobhunter.domain.Company;
 import com.duyhung.jobhunter.domain.User;
+import com.duyhung.jobhunter.repository.CompanyRepository;
+import com.duyhung.jobhunter.service.CompanyService;
 import com.duyhung.jobhunter.domain.response.ResCreateUserDTO;
 import com.duyhung.jobhunter.domain.response.ResUpdateUserDTO;
 import com.duyhung.jobhunter.domain.response.ResUserDTO;
@@ -18,16 +21,33 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final CompanyService companyService;
+    private final CompanyRepository companyRepository;
 
-    public UserService(UserRepository userRepository) {
+
+    public UserService(UserRepository userRepository, CompanyService companyService, CompanyRepository companyRepository) {
         this.userRepository = userRepository;
+        this.companyService = companyService;
+        this.companyRepository = companyRepository;
     }
 
     public User save(User user) {
+        //check company
+        if(user.getCompany() != null){
+            Optional<Company> companyOptional = this.companyService.findCompanyById(user.getCompany().getId());
+            user.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
+        }
         return this.userRepository.save(user);
     }
 
     public void deleteById(Long id) {
+        Optional<Company> companyOptional = this.companyRepository.findById(id);
+        if(companyOptional.isPresent()){
+            Company company = companyOptional.get();
+            //fetch all user belong to this company
+            List<User> users = this.userRepository.findByCompany(company);
+            this.userRepository.deleteAll(users);
+        }
         this.userRepository.deleteById(id);
     }
 
@@ -58,7 +78,8 @@ public class UserService {
 
         //remove sensitive data
         List<ResUserDTO> listUser = pageUsers.getContent()
-                .stream().map(item -> new ResUserDTO(
+                .stream()
+                .map(item -> new ResUserDTO(
                         item.getId(),
                         item.getName(),
                         item.getEmail(),
@@ -66,8 +87,13 @@ public class UserService {
                         item.getAddress(),
                         item.getAge(),
                         item.getUpdatedAt(),
-                        item.getCreatedAt()))
+                        item.getCreatedAt(),
+                        item.getCompany() != null
+                                ? new ResUserDTO.CompanyUser(item.getCompany().getId(), item.getCompany().getName())
+                                : null
+                ))
                 .collect(Collectors.toList());
+
 
         rs.setResult(listUser);
 
@@ -86,6 +112,13 @@ public class UserService {
             currentUser.setGender(reqUser.getGender());
             currentUser.setAddress(reqUser.getAddress());
 
+            //check company
+            if (reqUser.getCompany() != null) {
+                Optional<Company> companyOptional = this.companyService.findCompanyById(reqUser.getCompany().getId());
+                reqUser.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
+            }
+
+            //update
             currentUser = this.userRepository.save(currentUser);
         }
         return currentUser;
@@ -93,6 +126,14 @@ public class UserService {
 
     public ResUpdateUserDTO convertToResUpdateUserDTO(User user) {
         ResUpdateUserDTO res = new ResUpdateUserDTO();
+        ResUpdateUserDTO.CompanyUser companyUser = new ResUpdateUserDTO.CompanyUser();
+
+        if (user.getCompany() != null) {
+            companyUser.setId(user.getCompany().getId());
+            companyUser.setName(user.getCompany().getName());
+            res.setCompanyUser(companyUser);
+        }
+
         res.setId(user.getId());
         res.setName(user.getName());
         res.setAge(user.getAge());
@@ -104,6 +145,14 @@ public class UserService {
 
     public ResCreateUserDTO convertToResCreateDTO(User user) {
         ResCreateUserDTO res = new ResCreateUserDTO();
+        ResCreateUserDTO.CompanyUser companyUser = new ResCreateUserDTO.CompanyUser();
+
+        if(user.getCompany() != null){
+            companyUser.setId(user.getCompany().getId());
+            companyUser.setName(user.getCompany().getName());
+            res.setCompanyUser(companyUser);
+        }
+
         res.setId(user.getId());
         res.setName(user.getName());
         res.setEmail(user.getEmail());
@@ -111,11 +160,16 @@ public class UserService {
         res.setAge(user.getAge());
         res.setGender(user.getGender());
         res.setCreatedAt(user.getCreatedAt());
+
+
         return res;
     }
 
     public ResUserDTO convertToResUserDTO(User user) {
         ResUserDTO res = new ResUserDTO();
+
+        ResUserDTO.CompanyUser companyUser = new ResUserDTO.CompanyUser();
+
         res.setId(user.getId());
         res.setName(user.getName());
         res.setEmail(user.getEmail());
@@ -124,6 +178,13 @@ public class UserService {
         res.setGender(user.getGender());
         res.setCreatedAt(user.getCreatedAt());
         res.setUpdatedAt(user.getUpdatedAt());
+
+        if(user.getCompany() != null){
+            companyUser.setId(user.getCompany().getId());
+            companyUser.setName(user.getCompany().getName());
+            res.setCompanyUser(companyUser);
+        }
+
         return res;
     }
 

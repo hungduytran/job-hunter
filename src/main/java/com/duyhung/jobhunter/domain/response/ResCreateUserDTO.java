@@ -13,6 +13,37 @@ public class ResCreateUserDTO {
     private int age;
     private Instant createdAt;
 
+    private CompanyUser companyUser;
+
+    public CompanyUser getCompanyUser() {
+        return companyUser;
+    }
+
+    public void setCompanyUser(CompanyUser companyUser) {
+        this.companyUser = companyUser;
+    }
+
+    public static class CompanyUser {
+        private long id;
+        private String name;
+
+        public long getId() {
+            return id;
+        }
+
+        public void setId(long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
     public long getId() {
         return id;
     }

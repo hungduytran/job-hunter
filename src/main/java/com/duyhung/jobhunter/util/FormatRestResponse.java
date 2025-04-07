@@ -1,11 +1,9 @@
 package com.duyhung.jobhunter.util;
 
-import com.duyhung.jobhunter.domain.RestResponse;
+import com.duyhung.jobhunter.domain.response.RestResponse;
 import com.duyhung.jobhunter.util.annotation.ApiMessage;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
