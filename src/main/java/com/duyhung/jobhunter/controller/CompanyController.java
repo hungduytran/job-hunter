@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1")
 
@@ -52,7 +54,15 @@ public class CompanyController {
     }
 
 
-
+    @GetMapping("/companies/{id}")
+    @ApiMessage("Fecth companies")
+    public ResponseEntity<Company> getCompanyById(@PathVariable("id") long id) throws IdInvalidException {
+        Optional<Company> company = this.companyService.findCompanyById(id);
+        if (company.isEmpty()) {
+            throw new IdInvalidException("Company voi id " + id + " khong ton tai!");
+        }
+        return ResponseEntity.ok(company.get());
+    }
 
     @PutMapping("/companies")
     public ResponseEntity<Company> updateCompany(@Valid @RequestBody Company company){
