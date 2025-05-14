@@ -132,20 +132,38 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+        // Danh sách whitelist - Các đường dẫn được cho phép truy cập mà không yêu cầu xác thực
+        String[] whiteList = {
+                "/",
+                "/api/v1/auth/login",
+                "/api/v1/auth/refresh",
+                "/api/v1/auth/register",
+                "/storage/**",
+                "/api/v1/companies/**",
+                "/api/v1/jobs/**",
+                "/api/v1/skills/**",
+                "/api/v1/files/**",
+                "/api/v1/email/**",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/swagger-resources/**",
+                "/webjars/**"
+        };
+
         http
-                .csrf().disable()
+                .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/login","/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-                                "/webjars/**", "/api/v1/auth/login", "/api/v1/auth/refresh", "/storage/**").permitAll() // Các đường dẫn được cho phép
-                        .anyRequest().authenticated()  // Yêu cầu xác thực cho tất cả các yêu cầu còn lại
+                        .requestMatchers(whiteList).permitAll() // Cho phép truy cập mà không yêu cầu xác thực
+                        .anyRequest().authenticated() // Yêu cầu xác thực cho tất cả các yêu cầu còn lại
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())  // Sử dụng cấu hình JWT
-                        .authenticationEntryPoint(customAuthenticationEntryPoint) // Sử dụng custom entry point cho lỗi xác thực
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
-                .formLogin(f -> f.disable())  // Tắt form login mặc định
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Sử dụng Stateless
+                .formLogin(form -> form.disable()) // Tắt form login mặc định của Spring Security
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless - không lưu session
 
         return http.build();
     }

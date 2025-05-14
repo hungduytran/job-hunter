@@ -1,59 +1,45 @@
 package com.duyhung.jobhunter.domain;
 
 import com.duyhung.jobhunter.util.SecurityUtil;
-import com.duyhung.jobhunter.util.constant.GenderEnum;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.duyhung.jobhunter.util.constant.ResumeStateEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.List;
 
-@Setter
-@Getter
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "resumes")
+@Getter
+@Setter
+public class Resume {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String name;
 
-    @NotBlank(message = "password khong duoc de trong")
-    private String password;
-
-    @NotBlank(message = "email khong duoc de trong")
+    @NotBlank(message = "Email is required")
     private String email;
 
-    private int age;
+    @NotBlank(message = "Url is required")
+    private String url;
 
     @Enumerated(EnumType.STRING)
-    private GenderEnum gender;
-    private  String address;
+    private ResumeStateEnum status;
 
-    @Column(columnDefinition = "MEDIUMTEXT")
-    private String refreshToken;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant createdAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
     private Instant updatedAt;
 
     private String createdBy;
-
     private String updatedBy;
 
     @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
-    List<Resume> resumes;
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private Job job;
 
     @PrePersist
     public void handleBeforeCreate() {
@@ -67,6 +53,5 @@ public class User {
         this.updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() == true ?
                 SecurityUtil.getCurrentUserLogin().get() : "";
     }
-
-
 }
+
