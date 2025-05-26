@@ -4,6 +4,7 @@ import com.duyhung.jobhunter.util.SecurityUtil;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
 import org.springdoc.core.service.SecurityService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -124,6 +126,10 @@ public class SecurityConfiguration {
     @Value("${duyhung.jwt.base64-secret}")
     private String jwtKey;
 
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource; // Add this line
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -132,7 +138,6 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
-        // Danh sách whitelist - Các đường dẫn được cho phép truy cập mà không yêu cầu xác thực
         String[] whiteList = {
                 "/",
                 "/api/v1/auth/login",
@@ -153,17 +158,17 @@ public class SecurityConfiguration {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Use injected corsConfigurationSource
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(whiteList).permitAll() // Cho phép truy cập mà không yêu cầu xác thực
-                        .anyRequest().authenticated() // Yêu cầu xác thực cho tất cả các yêu cầu còn lại
+                        .requestMatchers(whiteList).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
-                .formLogin(form -> form.disable()) // Tắt form login mặc định của Spring Security
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless - không lưu session
+                .formLogin(form -> form.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }

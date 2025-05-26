@@ -59,22 +59,58 @@ public class ResumeService {
         this.resumeRepository.deleteById(id);
     }
 
-    public ResFetchResumeDTO getResume(Resume resume){
-        ResFetchResumeDTO resFetchResumeDTO = new ResFetchResumeDTO();
-        resFetchResumeDTO.setId(resume.getId());
-        resFetchResumeDTO.setEmail(resume.getEmail());
-        resFetchResumeDTO.setUrl(resume.getUrl());
-        resFetchResumeDTO.setStatus(resume.getStatus());
-        resFetchResumeDTO.setCreatedAt(resume.getCreatedAt());
-        resFetchResumeDTO.setCreatedBy(resume.getCreatedBy());
-        resFetchResumeDTO.setUpdatedAt(resume.getUpdatedAt());
-        resFetchResumeDTO.setUpdatedBy(resume.getUpdatedBy());
+//    public ResFetchResumeDTO getResume(Resume resume){
+//        ResFetchResumeDTO resFetchResumeDTO = new ResFetchResumeDTO();
+//        resFetchResumeDTO.setId(resume.getId());
+//        resFetchResumeDTO.setEmail(resume.getEmail());
+//        resFetchResumeDTO.setUrl(resume.getUrl());
+//        resFetchResumeDTO.setStatus(resume.getStatus());
+//        resFetchResumeDTO.setCreatedAt(resume.getCreatedAt());
+//        resFetchResumeDTO.setCreatedBy(resume.getCreatedBy());
+//        resFetchResumeDTO.setUpdatedAt(resume.getUpdatedAt());
+//        resFetchResumeDTO.setUpdatedBy(resume.getUpdatedBy());
+//
+//        if (resume.getJob() != null) {
+//            resFetchResumeDTO.setCompanyName(resume.getJob().getCompany().getName());
+//        }
+//
+//        resFetchResumeDTO.setUser(new ResFetchResumeDTO.UserResume(resume.getUser().getId(), resume.getUser().getName()));
+//        resFetchResumeDTO.setJob(new ResFetchResumeDTO.JobResume(resume.getJob().getId(), resume.getJob().getName()));
+//        return resFetchResumeDTO;
+//
+//    }
+public ResFetchResumeDTO getResume(Resume resume){
+    ResFetchResumeDTO resFetchResumeDTO = new ResFetchResumeDTO();
+    resFetchResumeDTO.setId(resume.getId());
+    resFetchResumeDTO.setEmail(resume.getEmail());
+    resFetchResumeDTO.setUrl(resume.getUrl());
+    resFetchResumeDTO.setStatus(resume.getStatus());
+    resFetchResumeDTO.setCreatedAt(resume.getCreatedAt());
+    resFetchResumeDTO.setCreatedBy(resume.getCreatedBy());
+    resFetchResumeDTO.setUpdatedAt(resume.getUpdatedAt());
+    resFetchResumeDTO.setUpdatedBy(resume.getUpdatedBy());
 
-        resFetchResumeDTO.setUser(new ResFetchResumeDTO.UserResume(resume.getUser().getId(), resume.getUser().getName()));
+    if (resume.getJob() != null) {
         resFetchResumeDTO.setJob(new ResFetchResumeDTO.JobResume(resume.getJob().getId(), resume.getJob().getName()));
-        return resFetchResumeDTO;
 
+        if (resume.getJob().getCompany() != null) {
+            resFetchResumeDTO.setCompanyName(resume.getJob().getCompany().getName());
+        } else {
+            resFetchResumeDTO.setCompanyName(null); // hoặc set giá trị mặc định tùy logic nghiệp vụ
+        }
+    } else {
+        resFetchResumeDTO.setJob(null);
+        resFetchResumeDTO.setCompanyName(null);
     }
+
+    if (resume.getUser() != null) {
+        resFetchResumeDTO.setUser(new ResFetchResumeDTO.UserResume(resume.getUser().getId(), resume.getUser().getName()));
+    } else {
+        resFetchResumeDTO.setUser(null);
+    }
+
+    return resFetchResumeDTO;
+}
 
     public ResultPaginationDTO fetchAllResumes(Specification<Resume> spec, Pageable pageable){
         Page<Resume> pageUser = this.resumeRepository.findAll(spec,pageable);
