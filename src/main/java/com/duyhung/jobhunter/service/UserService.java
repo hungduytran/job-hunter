@@ -70,7 +70,7 @@ public class UserService {
         return null;
     }
 
-    public  boolean isEmailExist(String email) {
+    public boolean isEmailExist(String email) {
         return this.userRepository.existsByEmail(email);
     }
 
