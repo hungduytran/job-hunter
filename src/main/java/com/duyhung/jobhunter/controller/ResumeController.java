@@ -1,6 +1,7 @@
 package com.duyhung.jobhunter.controller;
 
 import com.duyhung.jobhunter.domain.Resume;
+import com.duyhung.jobhunter.domain.User;
 import com.duyhung.jobhunter.domain.response.ResultPaginationDTO;
 import com.duyhung.jobhunter.domain.response.resume.ResCreateResumeDTO;
 import com.duyhung.jobhunter.domain.response.resume.ResFetchResumeDTO;
@@ -85,5 +86,13 @@ public class ResumeController {
 
         return ResponseEntity.ok().body(this.resumeService.fetchAllResumes(spec, pageable));
     }
+
+    @GetMapping("/resumes/by-user")
+    @ApiMessage("Get list resumes by user")
+    public ResponseEntity<ResultPaginationDTO> fetchResumeByUser(Pageable pageable) {
+        ResultPaginationDTO result = this.resumeService.fetchResumeByUser(pageable);
+        return ResponseEntity.ok(result);
+    }
+
 
 }

@@ -37,7 +37,7 @@ public class UserController {
         boolean isEmailExist = this.userService.isEmailExist(user.getEmail());
         if (isEmailExist) {
             throw new IdInvalidException(
-                    "Email" + user.getEmail() + " da ton tai, vui long su dung email khac!");
+                     "Email" + user.getEmail() + " da ton tai, vui long su dung email khac!");
         }
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);

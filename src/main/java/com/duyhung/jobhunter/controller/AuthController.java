@@ -2,19 +2,23 @@ package com.duyhung.jobhunter.controller;
 
 import com.duyhung.jobhunter.domain.User;
 import com.duyhung.jobhunter.domain.request.ReqLoginDTO;
+import com.duyhung.jobhunter.domain.response.ResCreateUserDTO;
 import com.duyhung.jobhunter.domain.response.ResLoginDTO;
 import com.duyhung.jobhunter.service.UserService;
 import com.duyhung.jobhunter.util.SecurityUtil;
 import com.duyhung.jobhunter.util.annotation.ApiMessage;
 import com.duyhung.jobhunter.util.error.IdInvalidException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,14 +29,31 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${duyhung.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, UserService userService, PasswordEncoder passwordEncoder) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @PostMapping("/auth/register")
+    @ApiMessage("Register a new user")
+    public ResponseEntity<ResCreateUserDTO> register(@Valid @RequestBody User postManUser) throws IdInvalidException {
+        boolean isEmailExist = this .userService.isEmailExist(postManUser.getEmail());
+        if (isEmailExist) {
+            throw new IdInvalidException("Email: " + postManUser.getEmail() + "already exist");
+        }
+
+        String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
+        User newUser = this.userService.save(postManUser);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.convertToResCreateDTO(newUser));
     }
 
     @PostMapping("/auth/login")
@@ -52,12 +73,14 @@ public class AuthController {
 
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
-                    currentUserDB.getId(),currentUserDB.getName(), currentUserDB.getEmail());
+                    currentUserDB.getId(),
+                    currentUserDB.getName(),
+                    currentUserDB.getEmail(),
+                    currentUserDB.getRole());
             resLoginDTO.setUser(userLogin);
         }
 
-        String access_token = this.securityUtil.createAccessToken(authentication.getName(), resLoginDTO.getUser());
-
+        String access_token = this.securityUtil.createAccessToken(authentication.getName(), resLoginDTO);
 
         resLoginDTO.setAccesstoken(access_token);
 
@@ -93,6 +116,8 @@ public class AuthController {
             userLogin.setId(currentUserDB.getId());
             userLogin.setEmail(currentUserDB.getEmail());
             userLogin.setName(currentUserDB.getName());
+            userLogin.setRole(currentUserDB.getRole());
+
             userGetAccount.setUser(userLogin);
         }
         return ResponseEntity.ok().body(userGetAccount);
@@ -120,11 +145,14 @@ public class AuthController {
 
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
-                    currentUserDB.getId(),currentUserDB.getName(), currentUserDB.getEmail());
+                    currentUserDB.getId(),
+                    currentUserDB.getName(),
+                    currentUserDB.getEmail(),
+                    currentUserDB.getRole());
             resLoginDTO.setUser(userLogin);
         }
 
-        String access_token = this.securityUtil.createAccessToken(email, resLoginDTO.getUser());
+        String access_token = this.securityUtil.createAccessToken(email, resLoginDTO);
 
         resLoginDTO.setAccesstoken(access_token);
 
