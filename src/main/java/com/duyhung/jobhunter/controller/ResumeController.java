@@ -1,14 +1,21 @@
 package com.duyhung.jobhunter.controller;
 
+import com.duyhung.jobhunter.domain.Company;
+import com.duyhung.jobhunter.domain.Job;
 import com.duyhung.jobhunter.domain.Resume;
+import com.duyhung.jobhunter.domain.User;
 import com.duyhung.jobhunter.domain.response.ResultPaginationDTO;
 import com.duyhung.jobhunter.domain.response.resume.ResCreateResumeDTO;
 import com.duyhung.jobhunter.domain.response.resume.ResFetchResumeDTO;
 import com.duyhung.jobhunter.domain.response.resume.ResUpdateResumeDTO;
 import com.duyhung.jobhunter.service.ResumeService;
+import com.duyhung.jobhunter.service.UserService;
+import com.duyhung.jobhunter.util.SecurityUtil;
 import com.duyhung.jobhunter.util.annotation.ApiMessage;
 import com.duyhung.jobhunter.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
+import com.turkraft.springfilter.builder.FilterBuilder;
+import com.turkraft.springfilter.converter.FilterSpecificationConverter;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -16,16 +23,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
 public class ResumeController {
 
     private final ResumeService resumeService;
+    private final UserService userService;
+    private final FilterSpecificationConverter filterSpecificationConverter;
+    private final FilterBuilder filterBuilder;
 
-    public ResumeController(ResumeService resumeService) {
+    public ResumeController(ResumeService resumeService, UserService userService, FilterSpecificationConverter filterSpecificationConverter, FilterBuilder filterBuilder) {
         this.resumeService = resumeService;
+        this.userService = userService;
+        this.filterSpecificationConverter = filterSpecificationConverter;
+        this.filterBuilder = filterBuilder;
     }
 
     @PostMapping("/resumes")
@@ -83,7 +99,36 @@ public class ResumeController {
             @Filter Specification<Resume> spec,
             Pageable pageable) throws IdInvalidException {
 
-        return ResponseEntity.ok().body(this.resumeService.fetchAllResumes(spec, pageable));
+        List<Long> arrJobIds = null;
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
+        User currentUser = this.userService.findByUsername(email);
+        if (currentUser != null) {
+            Company userCompany = currentUser.getCompany();
+            if (userCompany != null) {
+                List<Job> companyJobs = userCompany.getJobs();
+                if (companyJobs != null && companyJobs.size() > 0) {
+                    arrJobIds = companyJobs.stream().map(x -> x.getId())
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+
+        Specification<Resume> jobInSpec = filterSpecificationConverter.convert(filterBuilder.field("job")
+                .in(filterBuilder.input(arrJobIds)).get());
+
+        Specification<Resume> finalSpec = jobInSpec.and(spec);
+
+        return ResponseEntity.ok().body(this.resumeService.fetchAllResumes(finalSpec, pageable));
     }
+
+    @GetMapping("/resumes/by-user")
+    @ApiMessage("Get list resumes by user")
+    public ResponseEntity<ResultPaginationDTO> fetchResumeByUser(Pageable pageable) {
+        ResultPaginationDTO result = this.resumeService.fetchResumeByUser(pageable);
+        return ResponseEntity.ok(result);
+    }
+
 
 }

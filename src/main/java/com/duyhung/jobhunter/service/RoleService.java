@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +30,11 @@ public class RoleService {
     }
 
     public Role findById(Long id) {
-        return roleRepository.findById(id).orElse(null);
+        Optional<Role> roleOptional = this.roleRepository.findById(id);
+        if (roleOptional.isPresent()) {
+            return roleOptional.get();
+        }
+        return null;
     }
 
     public Role save(Role role) {

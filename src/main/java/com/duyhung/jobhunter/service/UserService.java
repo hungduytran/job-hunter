@@ -1,6 +1,7 @@
 package com.duyhung.jobhunter.service;
 
 import com.duyhung.jobhunter.domain.Company;
+import com.duyhung.jobhunter.domain.Role;
 import com.duyhung.jobhunter.domain.User;
 import com.duyhung.jobhunter.repository.CompanyRepository;
 import com.duyhung.jobhunter.service.CompanyService;
@@ -23,19 +24,29 @@ public class UserService {
     private final UserRepository userRepository;
     private final CompanyService companyService;
     private final CompanyRepository companyRepository;
+    private final RoleService roleService;
 
 
-    public UserService(UserRepository userRepository, CompanyService companyService, CompanyRepository companyRepository) {
+    public UserService(UserRepository userRepository, CompanyService companyService, CompanyRepository companyRepository, RoleService roleService) {
         this.userRepository = userRepository;
         this.companyService = companyService;
         this.companyRepository = companyRepository;
+        this.roleService = roleService;
     }
+
+
 
     public User save(User user) {
         //check company
         if(user.getCompany() != null){
             Optional<Company> companyOptional = this.companyService.findCompanyById(user.getCompany().getId());
             user.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
+        }
+
+        //check role
+        if(user.getRole() != null){
+            Role role = this.roleService.findById(user.getRole().getId());
+            user.setRole(role != null ? role : null);
         }
         return this.userRepository.save(user);
     }
@@ -79,19 +90,7 @@ public class UserService {
         //remove sensitive data
         List<ResUserDTO> listUser = pageUsers.getContent()
                 .stream()
-                .map(item -> new ResUserDTO(
-                        item.getId(),
-                        item.getName(),
-                        item.getEmail(),
-                        item.getGender(),
-                        item.getAddress(),
-                        item.getAge(),
-                        item.getUpdatedAt(),
-                        item.getCreatedAt(),
-                        item.getCompany() != null
-                                ? new ResUserDTO.CompanyUser(item.getCompany().getId(), item.getCompany().getName())
-                                : null
-                ))
+                .map(item -> this.convertToResUserDTO(item))
                 .collect(Collectors.toList());
 
 
@@ -115,7 +114,13 @@ public class UserService {
             //check company
             if (reqUser.getCompany() != null) {
                 Optional<Company> companyOptional = this.companyService.findCompanyById(reqUser.getCompany().getId());
-                reqUser.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
+                currentUser.setCompany(companyOptional.isPresent() ? companyOptional.get() : null);
+            }
+
+            //check role
+            if (reqUser.getRole() != null) {
+                Role role = this.roleService.findById(reqUser.getRole().getId());
+                currentUser.setRole(role != null ? role : null);
             }
 
             //update
@@ -167,8 +172,20 @@ public class UserService {
 
     public ResUserDTO convertToResUserDTO(User user) {
         ResUserDTO res = new ResUserDTO();
-
         ResUserDTO.CompanyUser companyUser = new ResUserDTO.CompanyUser();
+        ResUserDTO.RoleUser roleUser = new ResUserDTO.RoleUser();
+
+        if (user.getCompany() != null) {
+            companyUser.setId(user.getCompany().getId());
+            companyUser.setName(user.getCompany().getName());
+            res.setCompanyUser(companyUser);
+        }
+
+        if (user.getRole() != null) {
+            roleUser.setId(user.getRole().getId());
+            roleUser.setName(user.getRole().getName());
+            res.setRoleUser(roleUser);
+        }
 
         res.setId(user.getId());
         res.setName(user.getName());

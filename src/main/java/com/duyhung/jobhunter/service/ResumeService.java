@@ -10,6 +10,13 @@ import com.duyhung.jobhunter.domain.response.resume.ResUpdateResumeDTO;
 import com.duyhung.jobhunter.repository.JobRepository;
 import com.duyhung.jobhunter.repository.ResumeRepository;
 import com.duyhung.jobhunter.repository.UserRepository;
+import com.duyhung.jobhunter.util.SecurityUtil;
+import com.turkraft.springfilter.builder.FilterBuilder;
+import com.turkraft.springfilter.converter.FilterSpecification;
+import com.turkraft.springfilter.converter.FilterSpecificationConverter;
+import com.turkraft.springfilter.parser.FilterParser;
+import com.turkraft.springfilter.parser.node.FilterNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +30,21 @@ import java.util.stream.Collectors;
 @Service
 public class ResumeService {
 
+    @Autowired
+    FilterBuilder fb;
+
+    @Autowired
+    private FilterParser filterParser;
+
+    @Autowired
+    private FilterSpecificationConverter filterSpecificationConverter;
+
+
     private final ResumeRepository resumeRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
-    public ResumeService(ResumeRepository resumeRepository, JobRepository jobRepository, UserService userService, UserRepository userRepository) {
+
+    public ResumeService(ResumeRepository resumeRepository, JobRepository jobRepository, UserService userService, UserRepository userRepository, FilterParser filterParser, FilterSpecificationConverter filterSpecificationConverter) {
         this.resumeRepository = resumeRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
@@ -96,7 +114,7 @@ public ResFetchResumeDTO getResume(Resume resume){
         if (resume.getJob().getCompany() != null) {
             resFetchResumeDTO.setCompanyName(resume.getJob().getCompany().getName());
         } else {
-            resFetchResumeDTO.setCompanyName(null); // hoặc set giá trị mặc định tùy logic nghiệp vụ
+            resFetchResumeDTO.setCompanyName(null);
         }
     } else {
         resFetchResumeDTO.setJob(null);
@@ -152,4 +170,38 @@ public ResFetchResumeDTO getResume(Resume resume){
         }
         return true;
     }
+
+    public ResultPaginationDTO fetchResumeByUser(Pageable pageable) {
+        // Lấy email user hiện tại đăng nhập
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+
+        // Build filter cho email
+        FilterNode node = filterParser.parse("email='" + email + "'");
+        FilterSpecification<Resume> spec = filterSpecificationConverter.convert(node);
+
+        // Query database theo filter và pageable
+        Page<Resume> pageResume = this.resumeRepository.findAll(spec, pageable);
+
+        // Tạo đối tượng trả về
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
+
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageable.getPageSize());
+        mt.setPages(pageResume.getTotalPages());
+        mt.setTotal(pageResume.getTotalElements());
+
+        rs.setMeta(mt);
+
+        // Chuyển Resume entity sang DTO
+        List<ResFetchResumeDTO> listResume = pageResume.getContent()
+                .stream()
+                .map(this::getResume)  // method chuyển entity -> DTO
+                .collect(Collectors.toList());
+
+        rs.setResult(listResume);
+
+        return rs;
+    }
+
 }

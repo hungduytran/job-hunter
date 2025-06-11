@@ -56,8 +56,8 @@ public class GlobalException {
     public ResponseEntity<RestResponse<Object>> handleIdException(Exception ex) {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        res.setError(ex.getMessage());
-        res.setMessage("Exception occurred");
+        res.setMessage(ex.getMessage());
+        res.setError("Exception occurred");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
@@ -68,8 +68,8 @@ public class GlobalException {
     public ResponseEntity<RestResponse<Object>> handleNoResultException(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();
         res.setStatusCode(HttpStatus.NOT_FOUND.value());
-        res.setError(ex.getMessage());
-        res.setMessage("404 Not Found, URL may not exist");
+        res.setMessage(ex.getMessage());
+        res.setError("404 Not Found, URL may not exist");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -77,14 +77,14 @@ public class GlobalException {
     public ResponseEntity<RestResponse<Object>> validException(MethodArgumentNotValidException ex) {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        res.setMessage("Validation failed");
+        res.setError("Validation failed");
 
         StringBuilder errorMessage = new StringBuilder();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             errorMessage.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
         });
 
-        res.setError(errorMessage.toString().isEmpty() ? "Invalid input" : errorMessage.toString());
+        res.setMessage(errorMessage.toString().isEmpty() ? "Invalid input" : errorMessage.toString());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
@@ -96,9 +96,20 @@ public class GlobalException {
     public ResponseEntity<RestResponse<Object>> handleFileUploadException(Exception ex) {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        res.setError(ex.getMessage());
-        res.setMessage("Exception uploading file");
+        res.setMessage(ex.getMessage());
+        res.setError("Exception uploading file");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
+    @ExceptionHandler(value = {
+            PermissionException.class,
+    })
+    public ResponseEntity<Object> handlePermissionException(Exception ex){
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(HttpStatus.FORBIDDEN.value());
+        res.setError("FORBIDDEN");
+        res.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN.value()).body(res);
     }
 
 }
